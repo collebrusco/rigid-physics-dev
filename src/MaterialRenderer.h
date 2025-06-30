@@ -20,7 +20,8 @@ struct MaterialRenderer {
     static Mesh<Vt_pn> mesh;
 
     static void init();
-    static void sync(Camera& cam);
+    static void sync(Camera& cam, float amb = 0.08);
+    static void sync(Material const& material);
     static void render(glm::mat4 const& model);
     static void destroy();
 };

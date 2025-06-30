@@ -11,7 +11,9 @@ out vec3 iPos;
 out vec3 iNorm;
 
 void main() {
-    iPos = aPos;
-    iNorm = aNorm;
-    gl_Position = uProj * uView * uModel * vec4(aPos, 1.0);
+    vec4 wpos = uModel * vec4(aPos, 1.0);
+    iPos = wpos.xyz;
+    mat3 normat = transpose(inverse(mat3(uModel)));
+    iNorm = normat * aNorm;
+    gl_Position = uProj * uView * wpos;
 }

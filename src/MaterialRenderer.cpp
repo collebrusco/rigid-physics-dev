@@ -15,30 +15,41 @@ Mesh<Vt_pn> MaterialRenderer::mesh;
 void MaterialRenderer::init() {
     shader = Shader::from_source("matV", "matF");
     Vt_pn verts[] = {
-        {{ QUAD, -QUAD, -QUAD}, POSX},
-        {{ QUAD, -QUAD,  QUAD}, POSX},
-        {{ QUAD,  QUAD,  QUAD}, POSX},
+        /* ^z   >y*/
         {{ QUAD,  QUAD, -QUAD}, POSX},
+        {{ QUAD,  QUAD,  QUAD}, POSX},
+        {{ QUAD, -QUAD,  QUAD}, POSX},
+        {{ QUAD, -QUAD, -QUAD}, POSX},
+
+        /* ^z   >-y*/
         {{-QUAD, -QUAD, -QUAD}, NEGX},
         {{-QUAD, -QUAD,  QUAD}, NEGX},
         {{-QUAD,  QUAD,  QUAD}, NEGX},
         {{-QUAD,  QUAD, -QUAD}, NEGX},
+
+        /* ^z   >-x*/
         {{-QUAD,  QUAD, -QUAD}, POSY},
         {{-QUAD,  QUAD,  QUAD}, POSY},
         {{ QUAD,  QUAD,  QUAD}, POSY},
         {{ QUAD,  QUAD, -QUAD}, POSY},
-        {{-QUAD, -QUAD, -QUAD}, NEGY},
-        {{-QUAD, -QUAD,  QUAD}, NEGY},
-        {{ QUAD, -QUAD,  QUAD}, NEGY},
+
+        /* ^-z   >-x*/
         {{ QUAD, -QUAD, -QUAD}, NEGY},
-        {{ QUAD, -QUAD, -QUAD}, POSZ},
-        {{-QUAD,  QUAD, -QUAD}, POSZ},
-        {{-QUAD,  QUAD, -QUAD}, POSZ},
-        {{ QUAD, -QUAD, -QUAD}, POSZ},
-        {{-QUAD, -QUAD,  QUAD}, NEGZ},
-        {{-QUAD,  QUAD,  QUAD}, NEGZ},
-        {{ QUAD,  QUAD,  QUAD}, NEGZ},
-        {{ QUAD, -QUAD,  QUAD}, NEGZ},
+        {{ QUAD, -QUAD,  QUAD}, NEGY},
+        {{-QUAD, -QUAD,  QUAD}, NEGY},
+        {{-QUAD, -QUAD, -QUAD}, NEGY},
+
+        /* ^y   >-x*/
+        {{ QUAD, -QUAD,  QUAD}, POSZ},
+        {{ QUAD,  QUAD,  QUAD}, POSZ},
+        {{-QUAD,  QUAD,  QUAD}, POSZ},
+        {{-QUAD, -QUAD,  QUAD}, POSZ},
+
+        /* ^y   >x*/
+        {{-QUAD, -QUAD, -QUAD}, NEGZ},
+        {{-QUAD,  QUAD, -QUAD}, NEGZ},
+        {{ QUAD,  QUAD, -QUAD}, NEGZ},
+        {{ QUAD, -QUAD, -QUAD}, NEGZ},
     };
     #define QUAD_ELEMS(start) (start)+0,(start)+2,(start)+1,  (start)+0,(start)+3,(start)+2
     uint32_t elems[] = {
@@ -57,8 +68,18 @@ void MaterialRenderer::destroy() {
     mesh.destroy();
 }
 
-void MaterialRenderer::sync(Camera &cam) {
+void MaterialRenderer::sync(Camera &cam, float amb) {
     shader.uViewProj(cam.view(), cam.proj());
+    shader.uVec3("ucampos", cam.readPos());
+    shader.uFloat("uAmb", amb);
+}
+
+void MaterialRenderer::sync(Material const &material) {
+    shader.uVec3("uka", material.ka);
+    shader.uVec3("ukd", material.kd);
+    shader.uVec3("uke", material.ke);
+    shader.uVec3("uks", material.ks);
+    shader.uFloat("ualpha", material.alpha);
 }
 
 void MaterialRenderer::render(glm::mat4 const &model) {
