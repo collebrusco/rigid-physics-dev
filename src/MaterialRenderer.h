@@ -5,7 +5,7 @@
 #ifndef MATERIAL_RENDERER_H
 #define MATERIAL_RENDERER_H
 #include <flgl.h>
-#include <flgl/tools.h>
+#include <flgl/render.h>
 #include <flgl/glm.h>
 
 /** ambient, diffuse, emmisive, specular, alpha (specularity coeff) */
@@ -17,10 +17,12 @@ struct Material {
 struct MaterialRenderer {
 
     static Shader shader;
+    static Mesh<Vt_pn> mesh;
 
-    void init();
-    void sync(Camera& cam);
-    // void prepare
+    static void init();
+    static void sync(Camera& cam);
+    static void render(glm::mat4 const& model);
+    static void destroy();
 };
 
 
