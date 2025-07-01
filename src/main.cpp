@@ -10,6 +10,9 @@ SkyboxRenderer skyrend;
 MouseMovePerspectiveCamera cam;
 
 
+Material mat;
+
+
 int main() {
 	gl.init();
 	window.create("hello window", 1280, 720);
@@ -19,7 +22,6 @@ int main() {
 	cam.update(1.f/80.f);
 	cam.enable_look();
 
-	Material mat;
 	mat.alpha = 8.;
 	mat.ka = mat.kd = glm::vec3(0.4f, 0.8f, 0.4f);
 	mat.ks = glm::vec3(0.7);
@@ -38,6 +40,25 @@ int main() {
 			else
 				{cam.enable_look(); look = !look;}
 		}
+
+		bool change = false;
+		if (window.keyboard[GLFW_KEY_LEFT_BRACKET].pressed) {
+			change = true;
+			mat = Material(glm::vec3(0.4f, 0.8f, 0.4f), glm::max(0.f, mat.ks.x - 0.025f), mat.alpha);
+		}
+		if (window.keyboard[GLFW_KEY_RIGHT_BRACKET].pressed) {
+			change = true;
+			mat = Material(glm::vec3(0.4f, 0.8f, 0.4f), glm::min(1.f, mat.ks.x + 0.025f), mat.alpha);			
+		}
+		if (window.keyboard[GLFW_KEY_UP].pressed) {
+			change = true;
+			mat.alpha += 0.5f;
+		}
+		if (window.keyboard[GLFW_KEY_DOWN].pressed) {
+			change = true;
+			mat.alpha = glm::max(1.f, mat.alpha - 0.5f);
+		}
+		if (change) renderer.sync(mat);
 
 		gl.enable_depth_test();
 		gl.clear();

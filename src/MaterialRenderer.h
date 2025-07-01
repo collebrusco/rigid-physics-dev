@@ -12,7 +12,27 @@
 struct Material {
     glm::vec3 ka, kd, ke, ks;
     float alpha;
+    Material();
+    Material(glm::vec3 color, float spec, float shiny = 12.f, glm::vec3 emm = glm::vec3(0.f));
 };
+
+struct CubeMesh {
+    CubeMesh& init();
+    void destroy();
+    Mesh<Vt_pn>& mesh();
+private:
+    Mesh<Vt_pn> m;
+};
+
+
+struct SphereMesh {
+    SphereMesh& init(size_t N = 128);
+    void destroy();
+    Mesh<Vt_pn>& mesh();
+private:
+    Mesh<Vt_pn> m;
+};
+
 
 struct MaterialRenderer {
 

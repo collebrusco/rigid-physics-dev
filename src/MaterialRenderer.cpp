@@ -1,7 +1,29 @@
 #include "MaterialRenderer.h"
+#include <flgl/logger.h>
+LOG_MODULE(matrend);
 
-Shader MaterialRenderer::shader;
-Mesh<Vt_pn> MaterialRenderer::mesh;
+Material::Material() {
+    kd = ka = glm::vec3(1.f,0.f,1.f);
+    ks = glm::vec3(1.f);
+    ke = glm::vec3(0.f);
+    alpha = 12.f;
+}
+
+/** set up a material from:
+ * @param color base material color
+ * @param spec how specular the object is from 0 to 1: where 0 is completely dull and 1 is completely chrome
+ * @param shiny the specular coeffecient, higher is a tighter specular highlight, lower is more spread out 
+ * @param emm emmissive color of the mat (optional)
+ */
+Material::Material(glm::vec3 color, float spec, float shiny, glm::vec3 emm) {
+    assert(spec >= 0.f && spec <= 1.f && "spec is a 0 to 1 slider to go from dull to shiny");
+    const float dull = 1.f - spec;
+    kd = ka = color * dull;
+    ks = glm::vec3(spec);
+    alpha = shiny;
+    ke = emm;
+}
+
 
 #define QUAD (0.5f)
 
@@ -12,8 +34,7 @@ Mesh<Vt_pn> MaterialRenderer::mesh;
 #define POSZ {0.f, 0.f, 1.f}
 #define NEGZ {0.f, 0.f, -1.f}
 
-void MaterialRenderer::init() {
-    shader = Shader::from_source("matV", "matF");
+CubeMesh& CubeMesh::init() {
     Vt_pn verts[] = {
         /* ^z   >y*/
         {{ QUAD,  QUAD, -QUAD}, POSX},
@@ -60,7 +81,81 @@ void MaterialRenderer::init() {
         QUAD_ELEMS(16),
         QUAD_ELEMS(20),
     };
-    mesh = Mesh<Vt_pn>::from_arrays(24, verts, 36, elems);
+    m = Mesh<Vt_pn>::from_arrays(24, verts, 36, elems);
+    return *this;
+}
+
+void CubeMesh::destroy() {
+    m.destroy();
+}
+
+Mesh<Vt_pn>& CubeMesh::mesh() {
+    return m;
+}
+
+
+
+
+SphereMesh& SphereMesh::init(size_t N) {
+    const float PI = 3.14159265359f;
+    const float dPhi = PI / N;
+    const float dTheta = 2.0f * PI / N;
+
+    std::vector<Vt_pn> verts;
+    std::vector<uint32_t> elems;
+
+    for (int i = 0; i <= N; ++i) {
+        float phi = i * dPhi;
+        for (int j = 0; j <= N; ++j) {
+            float theta = j * dTheta;
+
+            float x = sinf(phi) * cosf(theta);
+            float y = cosf(phi);
+            float z = sinf(phi) * sinf(theta);
+
+            glm::vec3 pos = {x, y, z};
+            pos = glm::normalize(pos);
+            verts.push_back({pos/2.f, pos});
+        }
+    }
+
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            int curr = i * (N + 1) + j;
+            int next = (i + 1) * (N + 1) + j;
+
+            elems.push_back(curr);
+            elems.push_back(next);
+            elems.push_back(curr + 1);
+
+            elems.push_back(curr + 1);
+            elems.push_back(next);
+            elems.push_back(next + 1);
+        }
+    }
+
+    m = Mesh<Vt_pn>::from_vectors(verts, elems);
+    return *this;
+}
+
+
+void SphereMesh::destroy() {
+    m.destroy();
+}
+
+Mesh<Vt_pn>& SphereMesh::mesh() {
+    return m;
+}
+
+
+
+Shader MaterialRenderer::shader;
+Mesh<Vt_pn> MaterialRenderer::mesh;
+
+void MaterialRenderer::init() {
+    shader = Shader::from_source("matV", "matF");
+    
+    mesh = SphereMesh().init().mesh();
 }
 
 void MaterialRenderer::destroy() {
